@@ -1,4 +1,4 @@
-source = *.cpp
+source = main.cpp
 target = MDY;
 
 CXX = g++
