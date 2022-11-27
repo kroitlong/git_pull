@@ -41,29 +41,31 @@ int main(void) {
     //实际上每个按钮都会发生对应的事件
 
     */
-   //如果要使用QT进行图形化编程则使用上述思路，先使用命令行方式进行交互
+    //如果要使用QT进行图形化编程则使用上述思路，先使用命令行方式进行交互
     //------------------------------------------------------------------------------
-  cout<<"\n\n"<<"-------------------------------------------------------------------"<<endl;
-  cout<<"Welcome to our Micro Database Management System , below is the Menu"<<endl;
-  cout<<"-------------------------I AM THE MENU------------------------------"<<endl;
-  cout<<"1.The capitalization of command is not required , all character like <>,[],\"\" is not required"<<endl;
-  cout<<"2.Below is the Command System >>"<<endl;
-  cout<<"\t"<<"[1].To Create a Database, please enter :                 Create Database <dbname>"<<endl;
-  cout<<"\t"<<"[2].To choose a specified Database, please enter :       Use <dbname>"<<endl;
-  cout<<"\t"<<"[3].To Delete a Database, please enter:                  Drop Database <dbname>"<<endl;
-  cout<<"\t"<<"[4].To Create a Table, please enter :                    Create table <tbname>"<<endl;
-  cout<<"\t"<<"[5].To choose a specified Table, please enter :          Select <tbname>"<<endl;;
-  cout<<"\t"<<"[6].To Delect a Table, please enter :                    Drop table <tbname> from <dbname>"<<endl;
-  cout<<"\t"<<"[7].To Insert data in a table, please enter :            Insert <tbname> values"<<endl;
-  cout<<"\t"<<"[8].To Delete data in a table, please enter :            Delect <row_num> from <tbname>"<<endl;
-  cout<<"\t"<<"[9].To Select data in a table, please enter :            Select <row_num> from <table>"<<endl;
-  cout<<"\t"<<"[10].To see the structure of the Database System, please enter:  Showall"<<endl;
-  cout<<endl;
-  cout<<"3.Attention,each value you insert shall be like this :data1 data2 data3... "<<endl;
-  cout<<"---------------------------------------------------------------------"<<endl;
- 
-  present l;
-  l.show();
+    cout << "\n\n" << "---------------------------------------------------------------------------------------------" << endl;
+    cout << "Welcome to our Micro Database Management System , below is the Menu" << endl;
+    cout << "-------------------------I AM THE MENU---------------------------------------------------------------" << endl;
+    cout << "1.The capitalization of command is not required , all character like <>,[],\"\" is not required" << endl;
+    cout << "2.Below is the Command System >>" << endl;
+    cout << "\t" << "[1].To Create a Database, please enter :                 Create Database <dbname>" << endl;
+    cout << "\t" << "[2].To choose a specified Database, please enter :       Use <dbname>" << endl;
+    cout << "\t" << "[3].To Delete a Database, please enter:                  Drop Database <dbname>" << endl;
+    cout << "\t" << "[4].To Create a Table, please enter :                    Create table <tbname>" << endl;
+    cout << "\t" << "[5].To choose a specified Table, please enter :          Select <tbname>" << endl;;
+    cout << "\t" << "[6].To Delect a Table, please enter :                    Drop table <tbname>" << endl;
+    cout << "\t" << "[7].To Insert data in a table, please enter :            Insert <tbname> values(column1,column2...)" << endl;
+    cout << "\t" << "[8].To Delete data in a table, please enter :            Delect from <tbname> where(cond)" << endl;
+    cout << "\t" << "[9].To Select data in a table, please enter :            Select <column> from <table> where(<column>='content')" << endl;
+    cout << "\t" << "[10].To see the structure of the Database System, please enter:  ShowAll" << endl;
+    cout << "\t" << "[11].To quit, please enter exit " << endl;
+    cout << endl;
+    cout << "3.Attention,each value you insert shall be like this :data1 data2 data3... " << endl;
+    cout << "4.Each time when operate with a Database, Please use the command \"Use\" to open a Database" << endl;
+    cout << "---------------------------------------------------------------------------------------------------" << endl;
+
+    present l;
+    l.show();
     //------------------------------------------------------------------------------
     //以下是各个头文件的关系：
     /*
@@ -75,5 +77,5 @@ int main(void) {
       *              *                *         使用
       *----------->Dlist<-------------*<<<<<<---------container
     */
-   return 0;
+    return 0;
 }

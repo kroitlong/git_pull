@@ -43,7 +43,7 @@ private:
   size_t length;      //节点数
 
   using nodeptr_t = node*;    //定义节点指针类型
-  
+  using range = nodeptr_t;
 
 //内部的操作，用于提高代码的重用性
 
@@ -78,18 +78,32 @@ private:
 
     --length;
     } catch (std::out_of_range &e) {
-        std::cout << e.what() << std::endl;
-        exit(1);
+      std::cout << e.what() << std::endl;
+      exit(1);
     }
 
 public:
+//----------------------------------------------类的构造函数和析构函数
+  //默认构造函数
+  dlist() {
+    init();
+  }
+
+  //重载的构造函数，使之可以一次性创建多个数据-----压入的数据类型也是由模板给出，体现了模板的优点
+  dlist(const std::initializer_list<value_type> &l) noexcept : dlist() {
+    for (auto &v : l)
+    //这里使用尾插法，可同时插入多个结点
+    push_back(v);
+  }
+
 //----------------------------------类的抽象方法
   //作为链表，应该含有：
   
   //查找结点，a表示第几个结点，找到该节点并返回该节点
   node find(int a) {
     int flag=1;
-    for (auto p = head.next; flag<a; p = p->next,++flag)
+    auto p = head.next;
+    for (; flag<a; p = p->next,++flag)
     ;
     return p;
   }
@@ -147,25 +161,98 @@ public:
 
     init();
   }
-//----------------------------------------------类的构造函数和析构函数
-  //默认构造函数
-  dlist() {
-    init();
-  }
-
-  //重载的构造函数，使之可以一次性创建多个数据-----压入的数据类型也是由模板给出，体现了模板的优点
-  dlist(const std::initializer_list<value_type> &l) noexcept : dlist() {
-    for (auto &v : l)
-    //这里使用尾插法，可同时插入多个结点
-    push_back(v);
-  }
 
   /*析构函数，会删除整个链表-----因为是数据库，函数结束后貌似不能将资源析构掉？
   ~dlist() {
   destroy();
   }
   */
-//---------------------------------------------
+//-------------------------------------------------------------------------
 //迭代器设定
+//定义迭代器类
+//在外部类里声明友元，使外部类能访问iterator的内部私有成员
+
+//------------------还没想好迭代器怎么用，先使用find函数即可---------------------
+//-------------------------------------------------------------------------
+
+
+// friend class iterator; 
+
+// class iterator {
+// public:
+//   //container类型使dlist
+//   using container_t = dlist;
+//   //typename关键词告诉编译器将后面的东西解释为类型名
+//   using value_type = typename container_t::value_type;
+//   using reference = typename container_t::reference;
+//   using difference_type = typename container_t::difference_type;
+
+// private:
+//   using range = typename container_t::range;
+
+//   //这个迭代器实际上是一个原生指针的包装类
+//   //所以，迭代器内部有一个指向容器存储的指针
+//   //p用于指向结点
+//   range p;
+//   //cp用于指向该容器本身
+//   container_t *cp;
+
+// public:
+//   //构造器和析构器
+//   iterator(range r = nullptr, container_t *pc = nullptr) noexcept : p(r), cp(pc) {}
+//   ~iterator() noexcept {}
+// //-------------运算符重载，其中itr.p理解为range------------------
+//   //重载的!=运算符
+
+//   bool operator!=(const iterator &itr) const {
+//     return p != itr.p;
+//   }
+
+//   //重载的<运算符
+//   //这个是指从当前p指向结点开始，
+//   //带const是为了把常量指针this转换成常指针常量
+//   //转换的意义在于this指针默认是常量指针，不能把他默认初始化为另一个常量对象，所以要先把this转换从常指针常量，此时在其他地方用const声明对象时就不会报错了
+//   bool operator<(const iterator &itr) const {
+//     if (p == itr.p) return false;
+
+//     range t = p;
+//     while (t != &cp->tail && t != itr.p) t = t->next;
+//     return t == itr.p ? true : false;
+//   }
+
+//   //重载的++运算符
+//    constexpr iterator &operator++() {
+//     p = p->next; //内部指针后移
+//     return *this;
+//   }
+
+//   //重载的--运算符
+//   constexpr iterator &operator--() {
+//     p = p->prior; //内部指针前移
+//     return *this;
+//   }
+
+//   //重载的*运算符
+//   reference operator*() {
+//    return p->data;
+//   }
+
+//   //重载的->运算符
+//   auto operator->() {
+//     return p;
+//   }
+
+//   operator range() {
+//     return p;
+//   }
+
+
+// constexpr iterator begin() {
+//   return iterator(head.next, this);
+// }
+
+// constexpr iterator end() {
+//   return iterator(&tail, this);
+// }
 
 };
