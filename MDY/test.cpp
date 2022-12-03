@@ -12,14 +12,15 @@
 #include <sys/io.h>
 #include <errno.h>
 #include <fstream>
+#include "Dlist.h"
 using namespace std;
-string strcmp(const vector<string> &res, int a, int b) {
-    string str;
-    for (int i = a; i < b; i++) {
-        str = str + res[i];
-    }
-    return str;
-}
+// string strcmp(const vector<string> &res, int a, int b) {
+//     string str;
+//     for (int i = a; i < b; i++) {
+//         str = str + res[i];
+//     }
+//     return str;
+// }
 
 int main(void) {
     //-----------------------------------------------------------
@@ -44,9 +45,26 @@ int main(void) {
 
     //-----------------------------------------------------------
     //建立一行hash_map，一个char(即账户名)，对应一个int(即密码)
-    // unordered_map<string, long> Account;
-    // string account;
-    // long password;
+    // unordered_map<string, vector<string>> Account;
+    // string  person, input;
+
+    // while (input.compare("exit") != 0) {
+    //     vector<string> human;
+    //     cout << "enter the name : ";
+    //     getline(cin, person);
+    //     cout << "enter the age : ";
+    //     getline(cin, input); human.push_back(input);
+    //     cout << "enter the gender : ";
+    //     getline(cin, input); human.push_back(input);
+    //     cout << "enter the size : ";
+    //     getline(cin, input); human.push_back(input);
+    //     Account.insert(make_pair(person, human));
+    // }
+    // for (unordered_map<string, vector<string>>::iterator it = Account.begin(); it != Account.end(); it++) {
+    //     cout << it->first << " : " << it->second[0] << " : " << it->second[1] << " : " << it->second[2] << endl;
+    // }
+
+
 
     // char ch;
     // while (ch != 'q') {
@@ -94,13 +112,51 @@ int main(void) {
     //--------------------------------------------------------------
 
 
-    vector<string> str = {"nihao", "world", "=", "and", "fuck", "you", " ", "mm"};
-    string st;
-    st = strcmp(str, 2, str.size()-1);
-    cout << st << endl;
+    // vector<string> str = {"nihao", "world", "=", "and", "fuck", "you", " ", "mm"};
+    // string st;
+    // st = strcmp(str, 2, str.size()-1);
+    // cout << st << endl;
 
+    //---------------------------------------------------------------
+//下面是对dlist的测试用例，可以参考一下。会有bug，但是只要严格按照要求输入就不会出错，也可以试试查询没有的name，不会报错以修复
+    // dlist<person> l;
+    // string name, gender;
+    // int age;
+    // string input;
+    // while (1) {
+    //     cout << "请输入姓名：";
+    //     getline(cin, input);
+    //     name = input;
+    //     if (input == "exit")break;
+    //     cout << "请输入年龄：";
+    //     cin >> age;
+    //     getchar();
+    //     cout << "请输入性别：";
+    //     getline(cin, input);
+    //     if (input == "exit")break;
+    //     gender = input;
+    //     person human(name, gender, age);
+    //     l.push_front(human);
+    //     cout << (l.get(name)).get_name() << " " << (l.get(name)).get_gender() << " " << (l.get(name)).get_age() << endl;
+    //     cout << endl;
+    // }
 
-    return 0;
+    // cout << "输入要检索的人名：";
+    // getline(cin, input);
+
+    // while (input != "exit") {
+
+    //     if (l.empty(input)) {
+    //         cout << "查无此人 ,"<<"请重新输入要检索的人名：";
+    //         getline(cin, input);
+    //         continue;
+    //     }
+    //     person man = (l.find(input))->data;
+    //     cout << man.get_name() << " " << man.get_gender() << " " << man.get_age() << endl;
+    //     cout << "输入要检索的人名：";
+    //     getline(cin, input);
+    // }
+    // return 0;
 
 
 }

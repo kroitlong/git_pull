@@ -2,7 +2,7 @@ source = main.cpp
 target = MDY;
 
 CXX = g++
-CXXFLAG = -Wall -g -std=c++23 
+CXXFLAG = -Wall -g -std=c++23
 ASAN = -fsanitize=address
 
 LIB =
