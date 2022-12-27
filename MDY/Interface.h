@@ -30,6 +30,7 @@ void split(string &str, vector<string> &res, const char pattern) {
     return ;
 }
 
+
 //该类用于接收上层指令信息，作为相应信息的借口
 class Interface {
 private:
@@ -58,32 +59,52 @@ public:
     //创建表的操作
     //table有个构造函数table(const string &str,vector<string> &vec)
     void excute_create_table_operation(string name, string values) {
-        //分离条件
-        vector<string> column_names;
         vector<string> vec;
-        //values也得先保存下来
+        //values也得先保存下来，已经去掉括号了
         string value_copy = values;
-        //去括号
-        values = values.substr(values.find("(") + 1, values.find(")") - values.find("(") - 1);
-        split(values, column_names, ',');
+
+        vector<string> temp1;
+        split(values, temp1, ','); //将每一个结果按照 ，进行提取
+        vector<string> column_name;
+        vector<string> column_type;
+        vector<string> if_primary;
+        //static_cast<type>表示进行显式的类型转换
+        for (size_t i = 0; i < temp1.size(); i++) {
+            temp1[i].erase(0, temp1[i].find_first_not_of(" ")); //这里用到了erase()函数，作用是将字符串从第一个字符到第一个不为空的字符这之间的字符全部清除
+            temp1[i].erase(temp1[i].find_last_not_of(" ") + 1);//去掉字符串两边的空格
+            vector<string> temp2;
+            split(temp1[i], temp2, ' '); //这里进一步对子字符串按照空格进行划分
+            if (temp2.size() == 2) { //表示不是主键
+                column_name.push_back(temp2[0]);
+                column_type.push_back(temp2[1]);
+                if_primary.push_back("false");
+            } else if (temp2.size() == 3) { //表示是主键
+                column_name.push_back(temp2[0]);
+                column_type.push_back(temp2[1]);
+                if_primary.push_back("true");
+            }
+        }
+        //表示表所创建的路径
         string dir = db.get_dir() + "/" + name + ".dat";
         //创建表文件
         create_txt(dir);
         //将对象插入链表,同时完成记录
         vec.emplace(vec.begin(), dir);
-        vec.emplace(vec.begin() + 1, value_copy);
+        vec.emplace(vec.begin() + 1, value_copy);//这里是将我们创建表的时候插入的values值插入到table_map里面去，方便我们后续写入文件
+
         //测试通过
         //cout << vec[0] << " " << vec[1] << endl;
 
-        db.table_map.insert(make_pair(name, vec));
-        table tb1(name, dir);
-        tb1.set_values(column_names);
-        tb1.set_values_t(value_copy);
+        db.table_map.insert(make_pair(name, vec));//我们将对应表名称创建的时候的指定列的属性给插入到table_map里面去
+        table tb1(name, dir, column_name, column_type, if_primary); //创建表对象
+
         db.table_list.push_front(tb1);
         tb = db.table_list.get(name);
+        tb.show_all_column_type();
+
         //测试通过
         //cout << db.get_txt_dir() << endl;
-        db.write_txt(name);
+        db.write_txt(name);//这里是将name表名对应的键值对插入到我们对应的数据库表记录文件里面去
         cout << "table " << name << " created" << endl;
         //实例化一个表对象，并且把它作为节点添加到数据库的链表里面去
     }
@@ -167,7 +188,7 @@ public:
         if (column.compare("all") == 0) {
             if (condition.empty()) {
                 //表示无条件查询，输出整张表
-                tb.show();
+                tb.show_all();
                 cout << "Seleting operation to all : Done" << endl;
                 cout << endl;
             } else {
@@ -175,15 +196,33 @@ public:
                 cout << "Condition shall not exist if you select all" << endl;
                 cout << endl;
             }
-        } else { //表示column是我们要查询的列名称
-            column_name = column;
+        } else if (column.compare("*") == 0) { //表示我们要查询的是全部的列
+            if (condition.empty()) { //无条件输出全部列
+                tb.show_all();
+            } else {
+                string str = condition;
+                string value = str.substr(str.find("(") + 1, str.find(")") - str.find("(") - 1);
+                auto vc = vector<string>();
+                split(value, vc, '='); //将where字句拆分
+                //条件里面的列名
+                string condition_name = vc[0];
+                //条件里面的列值
+                string condition_value = vc[1];
+                //重载的show函数,输出对应列中满足条件的这一行
+                tb.show(condition_name, condition_value);
+                cout << endl;
 
+            }
+
+        } else { //表示column是我们要查询的列名称
+            string column_name = column;
+            cout << column_name << endl;
             if (condition.empty()) { //表示无条件查询
                 //打开table_name对应的文件，把所有的对应列记录读出来
                 cout << "Below is all values from " << column << endl;
                 cout << endl;
                 //重载的show函数，用于输出具有colum标签的这一整列及其对应的索引值
-                tb.show(column);
+                tb.show(column_name);
             } else {
                 //将 “where(“ 置为空
                 string str = condition;
@@ -195,7 +234,7 @@ public:
                 //条件里面的列值
                 condition_value = vc[1];
                 //重载的show函数,输出对应列中满足条件的这一行
-                tb.show(condition_name, condition_value);
+                tb.show(column_name, condition_name, condition_value);
                 cout << endl;
             }
 
@@ -205,18 +244,28 @@ public:
 
     //insert功能接口
     void excute_insert_operation(string name, string values) {
-        //这里的insert格式大致为 "insert table_name values(value1，value2，value3...)", values作为后面的整个代表，内部无空格，可以用哈希表
-        //要进行插入操作前先提示这个表要如何插入
-        tb = db.table_list.get(name);
+        //这里的insert格式大致为 "insert table_name values(value, value, value3...)", values作为后面的整个代表，内部无空格，可以用哈希表
+        tb = db.table_list.get(name);//这里我们拿到对应的表文件对象
         //用来输出这个表的所有列名，提示用户怎么输入
-        tb.show_column();
+        cout << "please insert the columns as the type like:";
+        tb.show_column_type();
+        cout << endl;
         //除括号，new_str存（）里面的内容
         string new_str = values.substr(values.find("(") + 1, values.find(")") - values.find("(") - 1);
         vector<string> vc;
         //此时vc里面装的就是我们要插入的一个一个的值
         split(new_str, vc, ',');
-        tb.insert_data(vc);
-        cout << "Insert successfully";
+        //我们还要对输入的值进一步处理，避免用户输入了空格,也就是将输入的空格全部删除掉
+        for (auto s : vc) {
+            s.erase(0, s.find_first_not_of(" "));
+            s.erase(s.find_last_not_of(" "), s.size()); //这里移除的最后一个空字符到字符串最后一个字符之间的空格
+        }
+        if (tb.insert_data(vc) == true) { //我们在这个函数里面肯定要执行一些判断逻辑
+            cout << "Insert successfully" << endl;
+        } else {
+            cout << "Insert unseccessfully" << endl;
+        }//这里只是将文件里面的内容进行更新了，但是我们的数据库对象还没有更新
+        db.set_map();//同步更新数据库对象
         cout << endl;
     }
 
@@ -229,9 +278,11 @@ public:
         where 子句：语法同 select 的。
         */
         //如果没有where则清空表，但不是删除表
+        //cout<<values<<endl;
         tb = db.table_list.get(name);
         if (values.empty()) {
-            tb.clear();
+            tb.clear();//清空文件的内容
+            db.set_map();//重新初始化数据库
             cout << "Delete successfully" << endl;
             cout << endl;
             //删除表table_name里面所有的记录，但是不删除表
@@ -243,8 +294,11 @@ public:
             condition_name = vc[0]; //条件里面的列名
             condition_value = vc[1]; //条件里面的列值
             //重载的clear函数，函数满足条件的这一行
+            //cout<<condition_name<<endl;
+            //cout<<condition_value<<endl;
             tb.clear(condition_name, condition_value);
-            cout << vc[0] << " : " << vc[1] << endl;
+            db.set_map();
+            //cout << vc[0] << " : " << vc[1] << endl;
             cout << endl;
         }
     }
@@ -256,10 +310,14 @@ public:
     void excute_use_operation(string name) {
         //使当前所有操作的数据库为name对应的数据库
         db = act.database_list.get(name);
+        if (db.get_flag() == false) {
+            return ;
+        }
         db.set_map();
         //修改路径至名为database_name的数据库
-        cout << "Use " << name << " Successfully" << endl;
         cout << endl;
+        cout << "Use " << name << " Successfully" << endl;
+
     }
 
 
@@ -309,7 +367,7 @@ public:
 
 //创建文件操作
     void create_file(const string &str) {
-        string command = "sudo mkdir " + str;
+        string command = "mkdir " + str;
         system(command.c_str());
     }
 

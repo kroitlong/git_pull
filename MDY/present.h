@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <limits>
 #include "MDYS.h"
 #include "Account.h"
 #include "Interface.h"
@@ -28,8 +29,7 @@ private:
     Interface inf;
     bool log_flag = false;
     bool exit_flag = false;
-    int password;
-
+    string password;
     //重载的字符拼接函数，旨在消除空格
     //@overload
     string strcmp(const vector<string> &res, int a, int b) {
@@ -80,15 +80,16 @@ public:
         if (database_operation_v[0].compare(Select) == 0) {
             //Select <column> from <table> [where<cond>], select函数只用于表，条件不是必须的，条件格式为where(column_name=name)
             if (database_operation_v.size() < 4)throw - 1;//抛出一个异常，表示输入的指令不对
-            name = database_operation_v[3];
+
             //表示有条件时，确定condition
             if (database_operation_v.size() > 4) {
                 condition = strcmp(database_operation_v, 4, database_operation_v.size());
             } else {
                 condition = "";
             }
-            cout << condition << endl;
+            //cout << condition << endl;
             column = database_operation_v[1];
+            name = database_operation_v[3];
             //向interface传入参数
             inf.excute_select_operation(column, name, condition);
 
@@ -105,16 +106,21 @@ public:
         } else if (database_operation_v[0].compare(Create) == 0) {
             //Create database <dbname>，create table <tbname> (每一列的名字)
             if (database_operation_v.size() < 3)throw - 1;
-            name = database_operation_v[2];
             type = database_operation_v[1];
             if (type.compare("database") == 0) {
                 //只需要传入name即可，默认在当前账户下创建
+                name = database_operation_v[2];
                 inf.excute_create_database_operation(name);
             } else if (type.compare("table") == 0) { //表示创建的是一个表
-                values = strcmp(database_operation_v, 2, database_operation_v.size());
-                values = values.replace(values.begin(), values.begin() + name.size(), "");
+                //values = strcmp(database_operation_v, 2, database_operation_v.size());
+                //values = values.replace(values.begin(), values.begin() + name.size(), "");
                 //测试,通过
                 // cout << values << endl;
+                //去括号
+                name = database_operation_v[2].substr(0, database_operation_v[2].find("("));
+                string values = str.substr(str.find("(") + 1, str.find(")") - str.find("(") - 1);
+                //测试，已经去掉括号
+                //cout<< values <<endl;
                 if (values == "") {
                     cout << "please input the create_operation with condition!" << endl;
                 } else {
@@ -133,9 +139,11 @@ public:
             //-----------------------------------------------delete有关的操作，只有对表删数据，删除指定行的数据
         } else if (database_operation_v[0].compare(Delete) == 0) {
             //Delect from <tbname> [where<cond>],如果忘记指定where条件，则清空表
+            //cout<<database_operation_v.size()<<endl;
             if (database_operation_v.size() < 3)throw - 1;
-            if (database_operation_v.size() > 4) {
-                condition =  strcmp(database_operation_v, 3, database_operation_v.size());
+            if (database_operation_v.size() > 3) {
+                //condition =  strcmp(database_operation_v, 3, database_operation_v.size());
+                condition = database_operation_v[3];
             } else {
                 condition = "";
             }
@@ -172,65 +180,67 @@ public:
 
         cout << "Please enter the Account_name :(don't have a account? please enter Create )"  << endl;
         getline(cin, input);
+        while (input == "") {
+            cout << "illegal input, please try again: ";
+            getline(cin, input);
+        }
         //转小写操作
         for (auto it1 = input.begin(); it1 != input.end(); it1++) {
             *it1 = tolower(*it1);
         }
-        if (input.compare("\n") != 0) {
-            if (input.compare(Create) == 0) {
-                //执行account创建
-                while (!mdys.flag) {
-                    cout << "Now please set the account_name: ";
-                    getline(cin, input);
-                    //向interface传递mdys
-                    inf.set_MDYS(mdys);
-                    mdys.set_account(input);
-                    //设置当前账户为执行路径
-                    auto act = mdys.account_list.get(input);
-                    inf.set_act(act);
-                }
-                //设置账户对应的密码
-                cout << "Please set a password(the default password is 114514): ";
-                cin >> password;
-                getchar();
-                mdys.set_password(input, password);
-                //调用设置密码函数，将之与先前输入的account合并为一个键值对加入哈希表中。
-                log_flag = true;
-            } else {
-                //账号不存在时要做异常处理
-                //设置act,在初始化MDYS时已经完成了向account_list里输入的工作
-                auto act = mdys.account_list.find(input);
-                while (act == nullptr) {
-                    cout << "account not exist, please try again: ";
-                    getline(cin, input);
-                    act = mdys.account_list.find(input);
-                }
-
-                (act->data).set_map();
-                inf.set_act(act->data);
-                int i = 0;
-                for (; i <= 4; i++) {
-                    cout << "Please enter the password" << "(you have " << 5 - i << " choices): ";
-                    cin >> password;
-                    getchar();
-                    //开始比较password和input,调用匹配函数
-                    log_flag = mdys.match(input, password);
-                    //验证成功则进入以input命名的账户(MDYS)里
-                    if (log_flag == true) {
-                        cout << "Load Successfully!" << endl;
-                        break;
-                    } else cout << "Wrong password, please try again!!";
-                }
-                if (i == 4) {
-                    cout << "you have no permissions to load" << endl;
-                    return;
-                }
-                //验证密码的操作
-                //我预计实现的操作是用一个专门的文件来存储用户的所有的密码，验证密码的时候就去打开这个专门的文件
-                //遍历整个文件，当读取到一行相同的记录时表示验证身份成功
-                //log_flag表时登录状态
-
+        if (input.compare(Create) == 0) {
+            //执行account创建
+            while (!mdys.flag) {
+                cout << "Now please set the account_name: ";
+                getline(cin, input);
+                //向interface传递mdys
+                inf.set_MDYS(mdys);
+                mdys.set_account(input);
+                //设置当前账户为执行路径
+                auto act = mdys.account_list.get(input);
+                inf.set_act(act);
             }
+            //设置账户对应的密码
+            cout << "Please set a password: ";
+            getline(cin,password);
+            mdys.set_password(input, password);
+            //调用设置密码函数，将之与先前输入的account合并为一个键值对加入哈希表中。
+            log_flag = true;
+        } else {
+            //设置act,在初始化MDYS时已经完成了向account_list里输入的工作
+            //cout << mdys.account_list.get_length() << endl;
+            auto act = mdys.account_list.find(input);
+            while (act == nullptr) {
+                cout << "account not exist, please try again: ";
+                getline(cin, input);
+                act = mdys.account_list.find(input);
+            }
+            (act->data).set_map();
+            inf.set_act(act->data);
+            int i = 0;
+            for (; i <= 4; i++) {
+                cout << "Please enter the password" << "(you have " << 5 - i << " choices): ";
+                getline(cin,password);
+                //开始比较password和input,调用匹配函数
+                log_flag = mdys.match(input, password);
+                //验证成功则进入以input命名的账户(MDYS)里
+                if (log_flag == true) {
+                    cout << "Load Successfully!" << endl;
+                    break;
+                } else {
+                    cout << "Wrong password, please try again!!(enter 'ENTER' to try again)"<<endl;
+                    cin.ignore(std::numeric_limits< streamsize >::max(), '\n');
+
+                }
+            }
+            if (i == 5) {
+                cout << "you have no permissions to load" << endl;
+                return;
+            }
+            //验证密码的操作
+            //我预计实现的操作是用一个专门的文件来存储用户的所有的密码，验证密码的时候就去打开这个专门的文件
+            //遍历整个文件，当读取到一行相同的记录时表示验证身份成功
+            //log_flag表时登录状态
         }
         //表示登录成功后
         if (log_flag == true) {

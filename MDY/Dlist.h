@@ -8,29 +8,6 @@
 #include "container.h"
 using namespace std;
 
-//----------------------------------------------------------------------------
-//作为一个带有模板参数的链表类，传入的参数应该是一个类对象，即使用的时候value_type是一个类对象
-
-//注意，要让这个dlist类工作起来，请确保你作为参数的类的结构应当如test.h，包括有两个类似的构造函数和至少一个名为get_name的函数，因为这里面使用到了这个函数
-//其实这个Dlist类是可以使用的，现在展示使用方法,以database对象为例，下面的操作视为在MDYS中进行
-/*
-//先初始化一个对象，此时表示要创建一个名为db的文件夹到指定路径，这个db对象有自己的名字属性，自己的路径属性等
-database db(利用构造函数进行初始化)
-//创建一个dlist对象l，其中的所以操作类型是一个database类型的对象
-dlist<database> l;
-//下面一个语句表示在dlist里插入一个database
-l.push_front(db);
-例如，要在MDYS里管理database，比如执行create database test指令，就在MDYS里创建一个database对象并初始化，
-此时该对象已经产生，对应的文件夹也已经在目录中了，然后将该对象压入链表
-//下面的语句用于访问链表中的对象,可以得到名字域为name的一个database对象，注意不是含有该对象的结点，而是这个对象本身。
-l.get(name)
-//下面的语句可以获得具有名字域为name的一个database对象的结点的指针
-l.find(name)
-//------------------------------------------------------------------------------
-
-其他操作类似，请结合这个链表完成MDYS，database的操作，table.h我来处理，因为非常长，而且会用到哈希表结构
-
-*/
 //-----------------------------------------------------------------------------
 template < typename value_t >
 class dlist: public container < value_t > {
@@ -44,7 +21,7 @@ public:
     //考虑到有些函数要访问node，暂时放在public段
     struct node {
         //这样每个对象内部可以自带属性，包括其路径，名字等。
-        value_type data;//参与操作的是类对象obj，可以是table，也可以是database，还可以是一个unordered_map
+        value_type data;//参与操作的是类对象obj，可以是table，也可以是database，还可以是一个map
         node *next = nullptr, *prior = nullptr; //指针域
         //调用该构造函数通过传参直接创建一个带有前驱，后继，数据的结点
         node(node *n, node *p, value_type d) : data(d), next(n), prior(p) {}
@@ -68,7 +45,6 @@ private:
     reference _get(const nodeptr_t p) try {
         if (empty()) //链表空时抛出异常
             throw std::out_of_range("empty list");
-
         return p->data;
     } catch (std::out_of_range &e) { //捕获异常
         std::cout << e.what() << std::endl;
@@ -195,6 +171,7 @@ public:
             ;
         return p;
     }
+    
     //重载的find函数，用于查找对应名字的结点并返回指向该节点的指针
     nodeptr_t find(string str) {
         size_t flag = 1;
@@ -232,6 +209,12 @@ public:
     value_type get(string str) {
         //运用查找函数找到name为str的结点
         auto p = find(str);
+        if(p==nullptr){
+            cout<<"object not exist, please try again"<<endl;
+            value_type m;
+            m.set_flag_false();
+            return m;
+        }
         return _get(p);
     }
     //在链表l头部获取数据
@@ -310,5 +293,9 @@ public:
     node *get_tail() {
         auto p = &tail;
         return p;
+    }
+
+    size_t get_length(){
+        return this->length;
     }
 };

@@ -1,4 +1,6 @@
 #include<iostream>
+#include<unistd.h>
+#include<string>
 //#include<>GUI库，目前主流的有QT，MFC,Wxweight等
 #include "present.h"
 #include "MDYS.h"
@@ -65,7 +67,14 @@ int main(void) {
     cout << "4.Each time when operate with a Database, Please use the command \"Use\" to open a Database" << endl;
     cout << "---------------------------------------------------------------------------------------------------" << endl;
 
-    MDYS mdys;
+
+    char buffer[255];
+    getcwd(buffer, sizeof(buffer));
+    string buffer_s = buffer;
+    //buffer_s获取成功，为当前工作目录的绝对路径
+    //cout << buffer_s << endl;
+    MDYS mdys(buffer_s);
+    cout << mdys.basepath << endl;
     present l;
     l.set_MDYS(mdys);
     l.show();

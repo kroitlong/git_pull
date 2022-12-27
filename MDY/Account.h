@@ -4,7 +4,7 @@
 #include<iostream>
 #include<string>
 #include<sstream>
-#include<unordered_map>
+#include<map>
 #include<fstream>
 #include<dirent.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@ private:
         //测试通过
         //cout << database_list.get(data_t).get_name()<<" " << database_list.get(data_t).get_dir()<<" " << database_list.get(data_t).get_txt_dir() << endl;
     }
-    long password;
+    string password;
 
 public:
 
@@ -51,10 +51,10 @@ public:
     //我们账户对象管理的数据库链表
     dlist<database> database_list;
     //账户下所有database名字和路径以及下层txt路径都放在database.txt文件中的
-    unordered_map<string, vector<string>> database_map;
+    map<string, vector<string>> database_map;
 
     //该类的构造比较简单，不会创建默认账户，只有调用create函数才会进行创建--暂定
-    account_t(const string &name, long num, const string &dir, const string &txt_dir) {
+    account_t(const string &name, string num, const string &dir, const string &txt_dir) {
         this->account_name = name;
         this->account_dir = dir;
         this->account_txt_dir = txt_dir;
@@ -125,7 +125,7 @@ public:
         this->flag = l;
     }
 
-    void set_password(const long &num) {
+    void set_password(const string &num) {
         this->password = num;
     }
 
@@ -144,4 +144,8 @@ public:
     string get_txt_dir() {
         return this->account_txt_dir;
     }
+    void set_flag_false() {
+        this->flag = false;
+    }
+
 };
